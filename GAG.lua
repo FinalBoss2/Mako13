@@ -12,7 +12,7 @@ screenGui.Parent = playerGui
 -- Main menu frame
 local menu = Instance.new("Frame")
 menu.Name = "Window"
-menu.Size = UDim2.new(0, 300, 0, 100)
+menu.Size = UDim2.new(0, 300, 0, 150)
 menu.Position = UDim2.new(0, 100, 0, 100)
 menu.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 menu.Active = true
@@ -119,8 +119,9 @@ local function createToggle(nameText, yOffset)
     end)
 end
 
-createToggle("dupe pet", 10)
-createToggle("dupe fruits", 60)
+-- Create both toggles
+createToggle("DUPE PETS", 10)
+createToggle("DUPE FRUITS", 60)
 
 -- Dragging logic
 do
