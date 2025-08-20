@@ -1,55 +1,56 @@
 -- LocalScript (place in StarterPlayerScripts or run via executor)
 
-local Players       = game:GetService("Players")
-local UserInputSvc  = game:GetService("UserInputService")
-local playerGui     = Players.LocalPlayer:WaitForChild("PlayerGui")
+local Players            = game:GetService("Players")
+local UserInputService   = game:GetService("UserInputService")
+local playerGui          = Players.LocalPlayer:WaitForChild("PlayerGui")
 
--- Main ScreenGui
+-- ScreenGui Root
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name         = "GAG_Menu_GUI"
 screenGui.ResetOnSpawn = false
 screenGui.Parent       = playerGui
 
--- Main Frame (the “window”)
+-- Main Frame (starts collapsed: only the top bar showing “GAG”)
 local menuFrame = Instance.new("Frame")
 menuFrame.Name               = "MenuFrame"
-menuFrame.Size               = UDim2.new(0, 300, 0, 150)
+menuFrame.Size               = UDim2.new(0, 300, 0, 30)
 menuFrame.Position           = UDim2.new(0, 100, 0, 100)
 menuFrame.BackgroundColor3   = Color3.fromRGB(30, 30, 30)
 menuFrame.Active             = true
 menuFrame.Parent             = screenGui
 
--- Top Bar (title + drag area + controls)
+-- Top Bar (drag area + title + controls)
 local topBar = Instance.new("Frame")
-topBar.Name             = "TopBar"
-topBar.Size             = UDim2.new(1, 0, 0, 30)
-topBar.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-topBar.Parent           = menuFrame
+topBar.Name               = "TopBar"
+topBar.Size               = UDim2.new(1, 0, 0, 30)
+topBar.BackgroundColor3   = Color3.fromRGB(20, 20, 20)
+topBar.Parent             = menuFrame
 
--- Title Label (“GAG”)
-local titleLabel = Instance.new("TextLabel")
-titleLabel.Name                 = "Title"
-titleLabel.Size                 = UDim2.new(0.6, 0, 1, 0)
-titleLabel.Position             = UDim2.new(0, 8, 0, 0)
-titleLabel.BackgroundTransparency = 1
-titleLabel.Text                 = "GAG"
-titleLabel.TextColor3           = Color3.new(1, 1, 1)
-titleLabel.Font                 = Enum.Font.SourceSansBold
-titleLabel.TextSize             = 20
-titleLabel.TextXAlignment       = Enum.TextXAlignment.Left
-titleLabel.Parent               = topBar
+-- “GAG” Title Button (click to expand/collapse)
+local titleButton = Instance.new("TextButton")
+titleButton.Name                 = "TitleButton"
+titleButton.Size                 = UDim2.new(0.6, 0, 1, 0)
+titleButton.Position             = UDim2.new(0, 8, 0, 0)
+titleButton.BackgroundTransparency = 1
+titleButton.Text                 = "GAG"
+titleButton.TextColor3           = Color3.new(1, 1, 1)
+titleButton.Font                 = Enum.Font.SourceSansBold
+titleButton.TextSize             = 20
+titleButton.TextXAlignment       = Enum.TextXAlignment.Left
+titleButton.AutoButtonColor       = false
+titleButton.Parent               = topBar
 
 -- Minimize Button (“_”)
 local minButton = Instance.new("TextButton")
-minButton.Name             = "Minimize"
-minButton.Size             = UDim2.new(0, 30, 1, 0)
-minButton.Position         = UDim2.new(1, -60, 0, 0)
-minButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-minButton.Text             = "_"
-minButton.TextColor3       = Color3.new(1, 1, 1)
-minButton.Font             = Enum.Font.SourceSansBold
-minButton.TextSize         = 24
-minButton.Parent           = topBar
+minButton.Name               = "Minimize"
+minButton.Size               = UDim2.new(0, 30, 1, 0)
+minButton.Position           = UDim2.new(1, -60, 0, 0)
+minButton.BackgroundColor3   = Color3.fromRGB(50, 50, 50)
+minButton.Text               = "_"
+minButton.TextColor3         = Color3.new(1, 1, 1)
+minButton.Font               = Enum.Font.SourceSansBold
+minButton.TextSize           = 24
+minButton.Parent             = topBar
 
 -- Close Button (“X”)
 local closeButton = Instance.new("TextButton")
@@ -63,26 +64,45 @@ closeButton.Font             = Enum.Font.SourceSansBold
 closeButton.TextSize         = 24
 closeButton.Parent           = topBar
 
--- Content Area (holds the option toggles)
+-- Content Area (holds the two toggle rows)
 local content = Instance.new("Frame")
 content.Name                 = "Content"
 content.Size                 = UDim2.new(1, 0, 1, -30)
 content.Position             = UDim2.new(0, 0, 0, 30)
 content.BackgroundTransparency = 1
+content.Visible              = false
 content.Parent               = menuFrame
 
--- State variables
-local dupePetEnabled   = true
-local dupeFruitEnabled = true
-local isMinimized      = false
+-- State Variables
+local isCollapsed      = true
+local dupePetEnabled   = false
+local dupeFruitEnabled = false
 
--- Utility to create an option row
+-- Expand / Collapse Function
+local function toggleMenu()
+    isCollapsed       = not isCollapsed
+    content.Visible   = not isCollapsed
+    menuFrame.Size    = isCollapsed
+        and UDim2.new(0, 300, 0, 30)
+        or UDim2.new(0, 300, 0, 150)
+end
+
+-- Hook clicks on the title and minimize button
+titleButton.MouseButton1Click:Connect(toggleMenu)
+minButton.MouseButton1Click:Connect(toggleMenu)
+
+-- Close Button Logic
+closeButton.MouseButton1Click:Connect(function()
+    screenGui:Destroy()
+end)
+
+-- Utility to Create a Toggle Row
 local function createOption(nameText, yOffset, initialState, onToggle)
     local row = Instance.new("Frame")
-    row.Size             = UDim2.new(1, -20, 0, 40)
-    row.Position         = UDim2.new(0, 10, 0, yOffset)
-    row.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    row.Parent           = content
+    row.Size               = UDim2.new(1, -20, 0, 40)
+    row.Position           = UDim2.new(0, 10, 0, yOffset)
+    row.BackgroundColor3   = Color3.fromRGB(50, 50, 50)
+    row.Parent             = content
 
     local label = Instance.new("TextLabel", row)
     label.Size                 = UDim2.new(0.6, 0, 1, 0)
@@ -100,8 +120,9 @@ local function createOption(nameText, yOffset, initialState, onToggle)
     toggle.Font              = Enum.Font.SourceSansBold
     toggle.TextSize          = 18
     toggle.TextColor3        = Color3.new(1, 1, 1)
+    toggle.AutoButtonColor    = false
 
-    -- Initialize based on initialState
+    -- Initialize state
     toggle.newState = initialState
     if initialState then
         toggle.Text             = "ON"
@@ -111,7 +132,7 @@ local function createOption(nameText, yOffset, initialState, onToggle)
         toggle.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
     end
 
-    -- Flip state on each click
+    -- Flip on click
     toggle.MouseButton1Click:Connect(function()
         toggle.newState = not toggle.newState
         if toggle.newState then
@@ -127,28 +148,26 @@ local function createOption(nameText, yOffset, initialState, onToggle)
     return row
 end
 
--- Create “Dupe Pet” option (starts ON)
-createOption("Dupe Pet", 10, dupePetEnabled, function(state)
+-- Create the Two Options (both start OFF)
+createOption("Dupe Pet",    10, false, function(state)
     dupePetEnabled = state
     print("Dupe Pet:", state)
 end)
 
--- Create “Dupe Fruits” option (starts ON)
-createOption("Dupe Fruits", 60, dupeFruitEnabled, function(state)
+createOption("Dupe Fruits", 60, false, function(state)
     dupeFruitEnabled = state
     print("Dupe Fruits:", state)
 end)
 
--- Dragging logic for the window
+-- Window Dragging Logic
 do
     local dragging, dragStart, startPos
 
     topBar.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1
-        or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging  = true
             dragStart = input.Position
-            startPos = menuFrame.Position
+            startPos  = menuFrame.Position
             input.Changed:Connect(function()
                 if input.UserInputState == Enum.UserInputState.End then
                     dragging = false
@@ -157,10 +176,8 @@ do
         end
     end)
 
-    UserInputSvc.InputChanged:Connect(function(input)
-        if dragging
-        and (input.UserInputType == Enum.UserInputType.MouseMovement
-          or input.UserInputType == Enum.UserInputType.Touch) then
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
             local delta = input.Position - dragStart
             menuFrame.Position = UDim2.new(
                 startPos.X.Scale, startPos.X.Offset + delta.X,
@@ -169,17 +186,3 @@ do
         end
     end)
 end
-
--- Minimize / Restore
-minButton.MouseButton1Click:Connect(function()
-    isMinimized     = not isMinimized
-    content.Visible = not isMinimized
-    menuFrame.Size  = isMinimized
-        and UDim2.new(0, 300, 0, 30)
-        or UDim2.new(0, 300, 0, 150)
-end)
-
--- Close
-closeButton.MouseButton1Click:Connect(function()
-    screenGui:Destroy()
-end)
